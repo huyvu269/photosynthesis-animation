@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photosynthesis — Isometric Animation</title>
+<style>
+:root{--navy:#1F3864;--ice:#EAF1FA;--amber:#FCF3D9;--amberD:#8A5A00;--green:#1E6B34;--greenBg:#E3F4E7;--line:#C9D6EA;--muted:#5B6B87}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Segoe UI",Calibri,system-ui,sans-serif;color:#262626;background:#eef2f9;display:flex;flex-direction:column}
+header{background:var(--navy);color:#fff;padding:10px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header h1{font-family:Cambria,Georgia,serif;font-size:22px}
+header .sub{color:#CADCFC;font-size:14px}
+header .tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+header label{font-size:14px;color:#CADCFC;display:flex;align-items:center;gap:5px}
+header select,header button{font:inherit;font-size:14px;font-weight:600;border:0;border-radius:8px;padding:6px 12px;cursor:pointer;background:#fff;color:var(--navy)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr);gap:14px;padding:14px}
+.panel{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(31,56,100,.14);min-height:0}
+#left{display:flex;flex-direction:column;padding:10px;gap:8px}
+#svgwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#EAF6FD,#F9FCFF);border-radius:10px;overflow:hidden}
+#scene{width:100%;height:100%;display:block}
+#cap{background:var(--navy);color:#fff;border-radius:10px;padding:10px 16px;font-size:19px;min-height:52px;display:flex;align-items:center}
+#cap.fade{animation:in .5s}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#ctl button{font:inherit;font-weight:700;font-size:15px;border:2px solid var(--navy);background:#fff;color:var(--navy);border-radius:9px;padding:6px 14px;cursor:pointer}
+#ctl button.pri{background:var(--navy);color:#fff}
+#ctl button:hover{filter:brightness(.95)}
+#ctr{margin-left:auto;font-weight:800;color:var(--muted)}
+#dots{display:flex;gap:6px}
+#dots i{width:12px;height:12px;border-radius:50%;background:#cfd8ea;transition:all .3s;cursor:pointer}
+#dots i.done{background:#2E7D32}#dots i.cur{background:#E8A33D;transform:scale(1.35)}
+#right{padding:14px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+#right h2{font-family:Cambria,Georgia,serif;color:var(--navy);font-size:21px}
+.stp{display:flex;gap:10px;align-items:flex-start;background:var(--ice);border:2px solid var(--line);border-radius:11px;padding:7px 11px;font-size:15.5px;line-height:1.38;cursor:pointer;opacity:.55;transition:all .3s}
+.stp b{flex:none;background:var(--navy);color:#fff;width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
+.stp .sw{font-weight:800;color:var(--navy)}
+.stp.done{opacity:.92}.stp.done b{background:var(--green)}
+.stp.cur{opacity:1;background:#FFF3C4;border-color:#E8A33D;transform:translateX(-5px);box-shadow:0 4px 14px rgba(232,163,61,.4)}.stp.cur b{background:#E8A33D}
+#eq{background:var(--amber);border:2px solid #E8A33D;border-radius:12px;padding:9px 12px;text-align:center;font-size:19px;font-weight:700;color:#5c4200}
+#eq small{display:block;font-size:11.5px;letter-spacing:.08em;color:var(--amberD);margin-bottom:2px}
+#eq span{padding:1px 5px;border-radius:6px;transition:all .3s}
+#eq span.hi{background:#FFE08A;box-shadow:0 0 0 3px #FFC107;transform:scale(1.08);display:inline-block}
+/* SVG animation */
+.arw{fill:none;stroke-width:5.5;stroke-linecap:round;stroke-dasharray:14 9}
+.arw.on{animation:dashf .8s linear infinite}.arw.old{opacity:.25}
+@keyframes dashf{to{stroke-dashoffset:-23}}
+.spk{transform-box:fill-box;transform-origin:center;animation:tw 1.4s ease-in-out infinite}
+@keyframes tw{0%,100%{transform:scale(.15) rotate(0);opacity:0}50%{transform:scale(1.25) rotate(45deg);opacity:1}}
+.glowleaf .leafg{animation:lglow 1.1s ease-in-out infinite alternate}
+@keyframes lglow{from{filter:none}to{filter:drop-shadow(0 0 8px #FFE066) brightness(1.12)}}
+.rootglow .root{animation:rglow 1s ease-in-out infinite alternate}
+@keyframes rglow{from{stroke:#EBD0A4}to{stroke:#FFB74D}}
+.sunrays{transform-origin:150px 105px;animation:spin 30s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.lbl{font-family:"Segoe UI",Arial,sans-serif;font-weight:700;paint-order:stroke;stroke-linejoin:round}
+.hidelabels .lbl{display:none}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Photosynthesis in Motion</h1><span class="sub">Isometric view · follow the process step by step</span>
+  <div class="tools">
+    <label>Speed <select id="speed"><option value="6500">Slow</option><option value="4600" selected>Normal</option><option value="3000">Fast</option></select></label>
+    <label><input type="checkbox" id="lab" checked> Labels</label>
+  </div>
+</header>
+<main>
+  <section id="left" class="panel">
+    <div id="svgwrap"><svg id="scene" viewBox="0 0 1000 720" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div id="cap"></div>
+    <div id="ctl"><button data-a="prev">◀ Step</button><button class="pri" data-a="play">▶ Play</button><button data-a="next">Step ▶</button><button data-a="rst">↺ Restart</button><div id="dots"></div><span id="ctr"></span></div>
+  </section>
+  <aside id="right" class="panel">
+    <h2>The seven steps</h2>
+    <div id="steps"></div>
+    <div id="eq"><small>THE CHEMICAL EQUATION</small><span id="e-co2">6 CO₂</span> + <span id="e-h2o">6 H₂O</span> + <span id="e-light">light</span> <span id="e-arr">→</span> <span id="e-glu">C₆H₁₂O₆</span> + <span id="e-o2">6 O₂</span></div>
+  </aside>
+</main>
+<script>
+/* ===================== CONTENT ===================== */
+const STEPS=[
+ ["Firstly,","sunlight is absorbed by the green chlorophyll in the leaves.",["e-light"]],
+ ["Meanwhile,","water is absorbed from the soil through the roots.",["e-h2o"]],
+ ["Following that,","the water is carried up the stem to the leaves.",["e-h2o"]],
+ ["At the same time,","carbon dioxide enters the leaves through tiny openings called stomata.",["e-co2"]],
+ ["Subsequently,","light, water and carbon dioxide combine to produce sugar.",["e-arr","e-glu"]],
+ ["As a by-product,","oxygen and water vapour are released through the stomata.",["e-o2"]],
+ ["Finally,","any extra sugar is transported down and stored in the roots as starch.",["e-glu"]]];
+
+/* ===================== ISOMETRIC ENGINE ===================== */
+const S=44,CX=500,CY=222,K=0.866;
+const P=(x,y,z)=>[CX+(x-y)*K*S, CY+(x+y)*0.5*S-z*S];
+const f=n=>n.toFixed(1);
+const pt=(x,y,z)=>P(x,y,z).map(f).join(',');
+const poly=(arr,attrs)=>`<polygon points="${arr.map(p=>pt(...p)).join(' ')}" ${attrs}/>`;
+const lin=(a,b)=>`M${pt(...a)} L${pt(...b)}`;
+const crv=(a,c,b)=>`M${pt(...a)} Q${pt(...c)} ${pt(...b)}`;
+const plane=(ox,oy,oz)=>{const [ex,ey]=P(ox,oy,oz);return `matrix(${f(K*S)},${f(.5*S)},${f(-K*S)},${f(.5*S)},${f(ex)},${f(ey)})`;};
+const COL={y:'#FFB300',b:'#1E88E5',p:'#7B6FA3',g:'#2E7D32',o:'#F57C00'};
+const LEAVES=[{z:2.0,a:165,s:1.5},{z:3.1,a:25,s:1.55},{z:4.1,a:245,s:1.45},{z:4.9,a:335,s:1.35},{z:5.7,a:105,s:1.05}];
+const tipOf=(l,d=2.3)=>[4+d*l.s*Math.cos(l.a*Math.PI/180),4+d*l.s*Math.sin(l.a*Math.PI/180),l.z];
+const mk=k=>`<marker id="m-${k}" markerUnits="userSpaceOnUse" markerWidth="22" markerHeight="22" refX="16" refY="11" orient="auto"><path d="M0 1 L20 11 L0 21Z" fill="${COL[k]}"/></marker>`;
+const leafPath="M0 0 C0.55 -0.62 1.85 -0.62 2.3 0 C1.85 0.62 0.55 0.62 0 0Z";
+const leafSVG=(l,i)=>`<g class="leafg" transform="${plane(4,4,l.z)} rotate(${l.a}) scale(${l.s})"><path d="${leafPath}" fill="url(#gLeaf)" stroke="#2F7D32" stroke-width="0.045"/><path d="M0.08 0 H2.2" stroke="#2F7D32" stroke-width="0.04" fill="none"/><path d="M0.6 0 L1.0 -0.26 M0.6 0 L1.0 0.26 M1.2 0 L1.55 -0.22 M1.2 0 L1.55 0.22" stroke="#2F7D32" stroke-width="0.03" fill="none"/></g>`;
+/* molecules */
+const sph=(r,g,x,y)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="url(#${g})"/>`;
+const mol={
+ co2:()=>`<line x1="-15" y1="0" x2="15" y2="0" stroke="#555" stroke-width="3"/>${sph(8,'sC',0,0)}${sph(7,'sR',-16,0)}${sph(7,'sR',16,0)}`,
+ h2o:()=>`${sph(8,'sB',0,0)}${sph(4.8,'sW',-9,7)}${sph(4.8,'sW',9,7)}`,
+ o2:()=>`<line x1="-8" y1="-1.5" x2="8" y2="-1.5" stroke="#555" stroke-width="2"/><line x1="-8" y1="1.5" x2="8" y2="1.5" stroke="#555" stroke-width="2"/>${sph(8,'sR',-9,0)}${sph(8,'sR',9,0)}`,
+ sug:()=>`<polygon points="0,-12 10.5,-6 10.5,6 0,12 -10.5,6 -10.5,-6" fill="#F57C00" stroke="#fff" stroke-width="2"/><polygon points="0,-6 5,-3 5,3 0,6 -5,3 -5,-3" fill="#FFB74D"/>`,
+ vap:()=>`<ellipse rx="12" ry="8" fill="#fff" stroke="#90CAF9" stroke-width="2" opacity=".95"/><ellipse cx="-8" cy="3" rx="8" ry="6" fill="#fff" stroke="#90CAF9" stroke-width="2" opacity=".95"/>`
+};
+const part=(path,type,dur,begin,sc)=>`<g><g transform="scale(${(sc||1)*1.3})">${mol[type]()}</g><animateMotion dur="${dur}s" begin="${begin}s" repeatCount="indefinite" path="${path}"/></g>`;
+const arrow=(d,k,on,cls)=>`<path d="${d}" class="arw ${on?'on '+(cls||''):'old'}" stroke="${COL[k]}" marker-end="url(#m-${k})"/>`;
+const spark=(p,k,dl)=>{const [x,y]=P(...p);return `<path class="spk" transform="translate(${f(x)},${f(y)})" d="M0 -11 L3.2 -3.2 L11 0 L3.2 3.2 L0 11 L-3.2 3.2 L-11 0 L-3.2 -3.2Z" fill="#fff" stroke="${COL[k]}" stroke-width="1.6" style="animation-delay:${dl}s"/>`;};
+const spkS=(x,y,k,dl)=>`<path class="spk" transform="translate(${x},${y})" d="M0 -11 L3.2 -3.2 L11 0 L3.2 3.2 L0 11 L-3.2 3.2 L-11 0 L-3.2 -3.2Z" fill="#fff" stroke="${COL[k]}" stroke-width="1.6" style="animation-delay:${dl}s"/>`;
+const text=(x,y,s,fill,anchor,size)=>`<text class="lbl" x="${x}" y="${y}" font-size="${size||17}" fill="${fill}" stroke="${fill==='#fff'?'rgba(0,0,0,.5)':'#fff'}" stroke-width="${fill==='#fff'?2.5:4}" text-anchor="${anchor||'start'}">${s}</text>`;
+const SUN=[150,105];
+/* ---------- static scene ---------- */
+function scene(){
+ const grid=[];for(let i=1;i<8;i++){grid.push(`<line x1="${pt(i,0,0).split(',')[0]}" y1="${pt(i,0,0).split(',')[1]}" x2="${pt(i,8,0).split(',')[0]}" y2="${pt(i,8,0).split(',')[1]}"/>`,`<line x1="${pt(0,i,0).split(',')[0]}" y1="${pt(0,i,0).split(',')[1]}" x2="${pt(8,i,0).split(',')[0]}" y2="${pt(8,i,0).split(',')[1]}"/>`);}
+ const strata=[-1,-2].map(z=>`<path d="${lin([0,8,z],[8,8,z])}"/><path d="${lin([8,8,z],[8,0,z])}"/>`).join('');
+ const roots=[[[4,4,0],[3.3,4.7,-1],[2.4,5.5,-2]],[[4,4,0],[4.8,3.4,-1],[5.8,2.8,-2.05]],[[4,4,0],[4,4.5,-1.2],[4.1,4.9,-2.2]],[[4,4,0],[3.6,3.2,-1],[3,2.4,-1.9]],[[4,4,0],[4.5,4.8,-1],[5.2,5.7,-1.8]]];
+ const rootSVG=roots.map(r=>`<path class="root" d="M${pt(...r[0])} Q${pt(...r[1])} ${pt(...r[2])}" fill="none" stroke="#EBD0A4" stroke-width="6.5" stroke-linecap="round"/>`).join('')+
+   [[[3.3,4.7,-1],[2.2,4.6,-1.5]],[[3.3,4.7,-1],[2.9,5.8,-1.7]],[[4.8,3.4,-1],[5.7,3.9,-1.6]],[[3.6,3.2,-1],[2.8,3.2,-1.5]]].map(r=>`<path class="root" d="${lin(r[0],r[1])}" fill="none" stroke="#EBD0A4" stroke-width="4" stroke-linecap="round"/>`).join('');
+ const defs=`<defs>
+  <linearGradient id="gSoilL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9C6B43"/><stop offset="1" stop-color="#6C4527"/></linearGradient>
+  <linearGradient id="gSoilR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#835836"/><stop offset="1" stop-color="#583823"/></linearGradient>
+  <linearGradient id="gLeaf" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5FAE3F"/><stop offset="1" stop-color="#8ED45F"/></linearGradient>
+  <radialGradient id="gSun" cx=".35" cy=".35" r=".8"><stop offset="0" stop-color="#FFF6A8"/><stop offset="1" stop-color="#FFB300"/></radialGradient>
+  <radialGradient id="sR" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FF9A8D"/><stop offset="1" stop-color="#C62828"/></radialGradient>
+  <radialGradient id="sC" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#9E9E9E"/><stop offset="1" stop-color="#212121"/></radialGradient>
+  <radialGradient id="sB" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#90CAF9"/><stop offset="1" stop-color="#1565C0"/></radialGradient>
+  <radialGradient id="sW" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#CFD8DC"/></radialGradient>
+  <radialGradient id="shadow"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  ${Object.keys(COL).map(mk).join('')}</defs>`;
+ const [sx,sy]=P(4,4,0);
+ return defs+
+ /* inner (back) walls and floor */
+ poly([[0,0,0],[8,0,0],[8,0,-3],[0,0,-3]],'fill="#6D4829"')+poly([[0,0,0],[0,8,0],[0,8,-3],[0,0,-3]],'fill="#7B5232"')+poly([[0,0,-3],[8,0,-3],[8,8,-3],[0,8,-3]],'fill="#5A3A22"')+
+ /* water table */
+ poly([[0,0,-2.3],[8,0,-2.3],[8,8,-2.3],[0,8,-2.3]],'fill="#6EC6E8" opacity=".62" stroke="#3E9FD0" stroke-width="2"')+
+ `<g stroke="#fff" stroke-width="2" opacity=".55" fill="none"><path d="${lin([1,6.5,-2.3],[2.5,6.5,-2.3])}"/><path d="${lin([5.5,7,-2.3],[7,7,-2.3])}"/><path d="${lin([1.5,1.5,-2.3],[3,1.5,-2.3])}"/><path d="${lin([5,1.2,-2.3],[6.4,1.2,-2.3])}"/></g>`+
+  /* front faces */
+ poly([[0,8,0],[8,8,0],[8,8,-3],[0,8,-3]],'fill="url(#gSoilL)" stroke="#4A2E18" stroke-width="2"')+poly([[8,0,0],[8,8,0],[8,8,-3],[8,0,-3]],'fill="url(#gSoilR)" stroke="#4A2E18" stroke-width="2"')+
+ `<g stroke="#4A2E18" stroke-width="1.5" opacity=".35" fill="none">${strata}</g>`+
+ `<g opacity=".8">${poly([[0,8,-2.0],[8,8,-2.0],[8,8,-2.6],[0,8,-2.6]],'fill="#6EC6E8"')}${poly([[8,0,-2.0],[8,8,-2.0],[8,8,-2.6],[8,0,-2.6]],'fill="#4FA9D6"')}</g>`+
+ /* x-ray grass top */
+ poly([[0,0,0],[8,0,0],[8,8,0],[0,8,0]],'fill="#7CC35A" opacity=".58" stroke="#3F7D2A" stroke-width="2.5"')+`<g stroke="#fff" stroke-width="1.2" opacity=".4">${grid.join('')}</g>`+`<g id="roots" opacity=".96">${rootSVG}</g>`+
+ `<ellipse cx="${f(sx)}" cy="${f(sy+6)}" rx="95" ry="38" fill="url(#shadow)"/>`+
+ /* stem + leaves */
+ `<path d="${lin([4,4,0],[4,4,6.1])}" stroke="#3F8F2F" stroke-width="12" stroke-linecap="round" fill="none"/><path d="${lin([4.04,4,0],[4.04,4,6.1])}" stroke="#6FBF4F" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7"/>`+
+ `<g id="leaves">${LEAVES.map(leafSVG).join('')}</g>`+
+ /* sun */
+ `<g class="sunrays">${Array.from({length:14},(_,i)=>`<line x1="${SUN[0]}" y1="${SUN[1]-58}" x2="${SUN[0]}" y2="${SUN[1]-78}" stroke="#FFD43B" stroke-width="7" stroke-linecap="round" transform="rotate(${i*360/14} ${SUN[0]} ${SUN[1]})"/>`).join('')}</g><circle cx="${SUN[0]}" cy="${SUN[1]}" r="52" fill="url(#gSun)" stroke="#FFB300" stroke-width="3"/>`+
+ text(SUN[0],SUN[1]+82,'Sunlight','#8A5A00','middle',18)+
+ text(P(8,8,0)[0]+14,P(8,8,0)[1]+26,'Soil','#fff','start',19)+
+ text(P(0,8,-2.3)[0]+6,P(0,8,-2.3)[1]+36,'Water in the soil','#0D3A66','start',19)+
+ `<g id="dyn"></g>`;}
+/* ---------- steps ---------- */
+function step(n,on){
+ let s='';const T=LEAVES.map(l=>tipOf(l));
+ if(n===1){const tgt=[T[2],T[0],T[3],T[1]];
+   tgt.forEach(t=>{const [tx,ty]=P(...t);const dx=tx-SUN[0],dy=ty-SUN[1],L=Math.hypot(dx,dy);const sx=SUN[0]+dx/L*66,sy=SUN[1]+dy/L*66;s+=`<path d="M${f(sx)} ${f(sy)} L${f(tx-dx/L*10)} ${f(ty-dy/L*10)}" class="arw ${on?'on':'old'}" stroke="${COL.y}" marker-end="url(#m-y)"/>`;});
+   if(on){const pts=[[280,160],[380,150],[320,215],[430,205],[250,230]];pts.forEach((p,i)=>s+=spkS(p[0],p[1],'y',i*.3));s+=text(190,232,'light energy','#8A5A00','start',19);}
+ }
+ if(n===2){const W=[[[1.6,6.3,-2.3],[2.45,5.4,-2.0]],[[6.8,4.6,-2.3],[5.8,2.95,-2.05]],[[5.4,7.0,-2.3],[5.1,5.7,-1.8]]];
+   W.forEach(w=>{s+=arrow(lin(w[0],w[1]),'b',on);});
+   if(on){W.forEach((w,i)=>{s+=part(lin(w[0],w[1]),'h2o',2.6+i*.3,i*.7,.8);s+=part(lin(w[0],w[1]),'h2o',2.6+i*.3,i*.7+1.3,.8);});s+=text(P(0,8,-1.2)[0]+30,P(0,8,-1.2)[1]-4,'Water absorbed','#fff','start',19)+text(P(0,8,-1.2)[0]+30,P(0,8,-1.2)[1]+16,'through the roots','#fff','start',19);}
+ }
+ if(n===3){const path=lin([4,4,0.1],[4,4,5.4]);
+   s+=`<path d="${path}" class="arw ${on?'on up':'old'}" stroke="${COL.b}" style="stroke-width:13;opacity:${on?.35:.18}"/>`+arrow(path,'b',on);
+   if(on){[0,.9,1.8,2.7].forEach(b=>s+=part(lin([4,4,0.1],[4,4,5.3]),'h2o',3.4,b,.8));const [x,y]=P(4.7,4,2.0);s+=text(x+18,y,'Water carried up','#0D47A1','start',19)+text(x+18,y+18,'the stem','#0D47A1','start',19);s+=spark([4,4,1.2],'b',0)+spark([4,4,3.4],'b',.7);}
+ }
+ if(n===4){const dst=[T[0],T[1]];const src=[[-1.8,4.2,3.4],[-1.4,6.2,2.2]];
+   const a1=lin(src[0],[T[0][0]+.1,T[0][1],T[0][2]]);const a2=lin(src[1],[T[0][0],T[0][1]+.2,T[0][2]-.15]);
+   s+=arrow(a1,'p',on)+arrow(a2,'p',on);
+   if(on){[0,1,2].forEach(b=>s+=part(a1,'co2',3.4,b,.9));[.5,1.5].forEach(b=>s+=part(a2,'co2',3.6,b,.8));s+=spark(T[0],'p',0)+spark([-0.2,4.2,3.4],'p',.5);const [x,y]=P(-1.9,3.6,3.9);s+=text(x-70,y-14,'Carbon dioxide (CO₂)','#4A3F7A','start',19)+text(x-70,y+6,'enters through stomata','#4A3F7A','start',19);}
+   const [ox,oy]=P(...T[0]);s+=`<circle cx="${f(ox)}" cy="${f(oy)}" r="9" fill="none" stroke="#4A3F7A" stroke-width="2.5" stroke-dasharray="3 3" opacity="${on?1:.4}"/>`;
+ }
+ if(n===5){const c=[4,4,3.7];const [cx,cy]=P(...c);
+   if(on){s+=`<circle cx="${f(cx)}" cy="${f(cy)}" r="40" fill="#FFF176" opacity=".5"><animate attributeName="r" values="28;56;28" dur="1.6s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;.15;.7" dur="1.6s" repeatCount="indefinite"/></circle>`+
+   part(`M${f(SUN[0]+40)} ${f(SUN[1]+35)} L${f(cx)} ${f(cy)}`,'sug',1.8,0,.001)+
+   `<g><circle r="8" fill="#FFD54F" stroke="#fff" stroke-width="2"><animateMotion dur="1.9s" repeatCount="indefinite" path="M${f(cx-120)} ${f(cy-70)} L${f(cx)} ${f(cy)}"/></circle></g>`+
+   part(lin([4,4,0.4],c),'h2o',1.9,.3,.8)+part(lin([T[0][0],T[0][1],T[0][2]],c),'co2',1.9,.6,.8)+
+   `<g transform="translate(${f(cx)},${f(cy)})"><g><animateTransform attributeName="transform" type="scale" values="0.7;1.5;0.7" dur="1.6s" repeatCount="indefinite"/>${mol.sug()}</g></g>`+
+   spark([4,4,4.2],'o',0)+spark([4.9,4,3.3],'o',.5)+spark([3.2,4.2,3.1],'o',1);
+   const [x,y]=P(6.6,2.6,3.9);s+=text(x+8,y,'Light + water + CO₂','#7A3E00','start',19)+text(x+8,y+19,'→ sugar (food)','#7A3E00','start',19);}
+ }
+ if(n===6){const o2=crv(T[1],[6.6,0.4,6.4],[8.8,-1.4,7.2]);const v=lin([4,4,6.4],[4.2,3.8,7.9]);
+   s+=arrow(o2,'g',on)+arrow(v,'b',on);
+   if(on){[0,1,2].forEach(b=>s+=part(o2,'o2',3,b,.95));[0,1.4].forEach(b=>s+=part(v,'vap',3.4,b,.9));s+=spark(T[1],'g',0)+spark([7.4,-.2,6.7],'g',.6)+spark([4.1,3.9,7.1],'b',.3);const [x,y]=P(8.6,-1.3,7.0);s+=text(x-20,y-14,'Oxygen (O₂)','#1B5E20','start',19);const [vx,vy]=P(4.2,3.8,8.0);s+=text(vx+10,vy-6,'Water vapour','#0D47A1','start',19)+text(vx+10,vy+14,'(transpiration)','#0D47A1','start',19);}
+ }
+ if(n===7){const d1=lin([4,4,3.7],[4,4,0.1]);const d2=crv([4,4,0.1],[4.1,4.4,-1.2],[4.1,4.9,-2.2]);
+   s+=arrow(d1,'o',on)+arrow(d2,'o',on);
+   if(on){[0,.8,1.6,2.4].forEach(b=>s+=part(d1,'sug',3.2,b,.7));[.6,1.8].forEach(b=>s+=part(d2,'sug',2.2,b,.7));s+=spark([4,4,2],'o',0)+spark([4.1,4.7,-1.6],'o',.5)+spark([5.2,5.6,-1.7],'o',1);const [x,y]=P(5.4,5.4,-0.9);s+=text(x+14,y,'Extra sugar is stored','#fff','start',19)+text(x+14,y+19,'as starch in the roots','#fff','start',19);}
+ }
+ return s;}
+/* ---------- controller ---------- */
+const svg=document.getElementById('scene'),cap=document.getElementById('cap'),stepsEl=document.getElementById('steps'),ctr=document.getElementById('ctr'),dots=document.getElementById('dots');
+svg.innerHTML=scene();
+stepsEl.innerHTML=STEPS.map((s,i)=>`<div class="stp"><b>${i+1}</b><div><span class="sw">${s[0]}</span> ${s[1]}</div></div>`).join('');
+dots.innerHTML=STEPS.map((_,i)=>`<i title="Step ${i+1}"></i>`).join('');
+const stp=[...stepsEl.children],dt=[...dots.children],eqIds=['e-co2','e-h2o','e-light','e-arr','e-glu','e-o2'];
+let cur=0,timer=null;const playB=document.querySelector('[data-a=play]');
+function show(n){cur=Math.max(0,Math.min(7,n));let h='';for(let i=1;i<cur;i++)h+=step(i,false);if(cur>0)h+=step(cur,true);
+ svg.querySelector('#dyn').innerHTML=h;svg.classList.toggle('glowleaf',cur===1||cur===5);svg.classList.toggle('rootglow',cur===7);
+ cap.textContent=cur?`${STEPS[cur-1][0]} ${STEPS[cur-1][1]}`:'Press ▶ Play to watch photosynthesis, step by step.';cap.classList.remove('fade');void cap.offsetWidth;cap.classList.add('fade');
+ stp.forEach((e,i)=>{e.classList.toggle('cur',i+1===cur);e.classList.toggle('done',i+1<cur);});dt.forEach((e,i)=>{e.classList.toggle('cur',i+1===cur);e.classList.toggle('done',i+1<cur);});
+ ctr.textContent=cur?`Step ${cur} / 7`:'Ready';eqIds.forEach(id=>document.getElementById(id).classList.toggle('hi',cur>0&&STEPS[cur-1][2].includes(id)));
+ if(cur>=7)stop();}
+function play(){if(timer){stop();return;}if(cur>=7||cur===0)show(1);playB.textContent='⏸ Pause';timer=setInterval(()=>show(cur+1),+document.getElementById('speed').value);}
+function stop(){clearInterval(timer);timer=null;playB.textContent='▶ Play';}
+document.querySelector('[data-a=prev]').onclick=()=>{stop();show(cur-1)};document.querySelector('[data-a=next]').onclick=()=>{stop();show(cur+1)};
+playB.onclick=play;document.querySelector('[data-a=rst]').onclick=()=>{stop();show(0)};
+stp.forEach((e,i)=>e.onclick=()=>{stop();show(i+1)});dt.forEach((e,i)=>e.onclick=()=>{stop();show(i+1)});
+document.getElementById('speed').onchange=()=>{if(timer){stop();play();}};
+document.getElementById('lab').onchange=e=>svg.classList.toggle('hidelabels',!e.target.checked);
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){stop();show(cur+1)}else if(e.key==='ArrowLeft'){stop();show(cur-1)}else if(e.key===' '){e.preventDefault();play();}else if(e.key.toLowerCase()==='r'){stop();show(0)}});
+show(0);
+</script>
+</body>
+</html>
